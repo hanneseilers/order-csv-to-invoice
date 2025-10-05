@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Rechnung {{ invoice.invoice_no }}{% endblock %}
+{% block body %}
+  <div class="header">
+    <div class="row">
+      <div class="col">
+        {% if company.logo_data %}
+          <img src="{{ company.logo_data }}" alt="Logo" style="height: 50px">
+        {% else %}
+          <div class="brand">{{ company.name }}</div>
+        {% endif %}
+        <div class="small muted">
+          {{ company.street }} · {{ company.postal_code }} {{ company.city }} · {{ company.country }}<br>
+          {{ company.email }}{% if company.phone %} · {{ company.phone }}{% endif %}
+          {% if company.vat_id %}<br>USt-IdNr.: {{ company.vat_id }}{% endif %}
+        </div>
+      </div>
+      <div class="col right">
+        <h1>Rechnung</h1>
+        <div class="small">
+          Rechnungsnummer: <span class="mono">{{ invoice.invoice_no }}</span><br>
+          Referenz: <span class="mono">{{ invoice.order_id }}</span><br>
+          {{ invoice.location }}, {{ invoice.date_str }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col box">
+      <strong>Rechnung an</strong><br>
+      {{ customer.name }}<br>
+      {% if customer.street %}{{ customer.street }}<br>{% endif %}
+      {% if customer.postal_code or customer.city %}{{ customer.postal_code }} {{ customer.city }}<br>{% endif %}
+      {% if customer.country %}{{ customer.country }}<br>{% endif %}
+      {% if customer.email %}<span class="small muted">{{ customer.email }}</span>{% endif %}
+    </div>
+    <div class="col box">
+      <strong>Zahlungsinformationen</strong><br>
+      Zahlungsziel: {{ invoice.payment_terms }}<br>
+      Bank: {{ bank.bank_name }}<br>
+      <span class="mono small">IBAN {{ bank.iban }} · BIC {{ bank.bic }}</span>
+      {% if paypal.link %}<br>PayPal: <span class="mono small">{{ paypal.link }}</span>{% endif %}
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 8%">Pos.</th>
+          <th>Beschreibung</th>
+          <th style="width: 12%">Menge</th>
+          <th style="width: 18%">Einzelpreis</th>
+          <th style="width: 10%">MwSt.</th>
+          <th style="width: 18%">Zwischensumme</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td class="mono">{{ loop.index }}</td>
+          <td>{{ item.name }}</td>
+          <td class="right">{{ item.quantity }}</td>
+          <td class="right">{{ item.unit_price_fmt }} {{ currency }}</td>
+          <td class="right">{{ item.tax_rate_pct }}%</td>
+          <td class="right">{{ item.line_net_fmt }} {{ currency }}</td>
+        </tr>
+        {% endfor %}
+        {% if shipping and shipping > 0 %}
+        <tr>
+          <td></td><td>Versand</td><td></td><td></td><td></td>
+          <td class="right">{{ "%.2f"|format(shipping) }} {{ currency }}</td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col">
+      {% if notes %}<div class="box"><strong>Hinweis:</strong> {{ notes }}</div>{% endif %}
+      {% if invoice.footer_note %}<div class="small mt-3">{{ invoice.footer_note }}</div>{% endif %}
+    </div>
+    <div class="col">
+      <table class="totals" style="width:100%">
+        <tr>
+          <td class="right" style="width:60%"><strong>Zwischensumme (netto):</strong></td>
+          <td class="right mono">{{ totals.net_fmt }} {{ currency }}</td>
+        </tr>
+        <tr>
+          <td class="right">MwSt.:</td>
+          <td class="right mono">{{ totals.vat_fmt }} {{ currency }}</td>
+        </tr>
+        <tr>
+          <td class="right"><strong>Gesamtbetrag:</strong></td>
+          <td class="right mono"><strong>{{ totals.gross_fmt }} {{ currency }}</strong></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col"></div>
+    <div class="col qr">
+      {% if sepa_qr %}<img src="{{ sepa_qr }}" alt="SEPA QR" style="height:100px; margin-left: 12px">{% endif %}
+      {% if paypal.qr %}<img src="{{ paypal.qr }}" alt="PayPal QR" style="height:100px; margin-left: 12px">{% endif %}
+    </div>
+  </div>
+
+  <div class="small muted mt-4">
+    {{ company.name }} · {{ company.street }}, {{ company.postal_code }} {{ company.city }} · {{ company.email }}
+  </div>
+{% endblock %}
