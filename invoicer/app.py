@@ -18,7 +18,7 @@ def main():
     ap = argparse.ArgumentParser(description="Invoicer (HTML → PDF) modular")
     ap.add_argument("--csv", required=True, help="CSV input path")
     ap.add_argument("--out", required=True, help="Output folder for PDFs")
-    ap.add_argument("--config", default="config.yaml", help="Path to YAML config")
+    ap.add_argument("--config", default="config_example.yaml", help="Path to YAML config")
     ap.add_argument("--only", help="Process only this E-Mail address")
     ap.add_argument("--list", action="store_true", help="Create an order list only")
     ap.add_argument("--send", action="store_true", help="Send emails (config email.enabled must be true)")
