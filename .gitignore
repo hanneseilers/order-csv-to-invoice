@@ -1,2 +1,5 @@
 *.yaml
 !config_example.yaml
+
+*.csv
+!orders_example.csv
