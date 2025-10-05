@@ -1,0 +1,64 @@
+# RENAME CONFIG TO USE IT
+company:
+  name: "Company & Co. Unlimited"
+  street: "Mainstreet No. 5"
+  postal_code: "123456"
+  city: "Bigtown"
+  country: "Germany"
+  email: "billing@example.de"
+  phone: "+49 431 123456"
+  vat_id: "DE123456789"
+  logo_path: ""
+
+bank:
+  account_holder: "Jon Doe"
+  iban: "DE02120300000000202051"
+  bic: "BYLADEM1001"
+  bank_name: "DemoBank"
+
+paypal:
+  link_template: "https://paypal.me/jondoe/{amount}"
+
+invoice:
+  title: "Invoice Title"
+  currency: "EUR"
+  net_prices: true
+  default_vat_rate: 0.19
+  payment_terms: "Payable without discount within 10 DAYS"
+  footer_note: "Thanks for your order"
+  sender_location_for_date_line: ""
+  numbering:
+    prefix: "RE-"
+    date_format: "%d.%m.%Y"
+    per_run_sequence_start: 1
+
+email:
+  enabled: false
+  smtp_host: "smtp.example.com"
+  smtp_port: 587
+  use_tls: true
+  username: "smtp-user"
+  password: "smtp-password"
+  sender_email: "rechnung@beispiel.de"
+  subject_template: "Ihre Rechnung {invoice_no}"
+  body_template: |
+    Hello {customer_name},
+
+    thank you for your order.
+    We attached your order list {invoice_no}.
+
+    Best regards
+    {company_name}
+
+models:
+  customer:
+    name_tag: "Name"
+    mail_tag: "E-Mail-Adresse"
+    time_tag: "Zeitstempel"
+  order:
+    exclude_columns: ["E-Mail-Adresse", "Kommentar", "Bestellbestätigung"]
+
+    # data to exclude after columns were removed from exlude config above
+    exclude_data_columns: ["Zeitstempel", "Name"]
+
+    date_format: "%d.%m.%Y %H:%M:%S"
