@@ -16,10 +16,10 @@
         </div>
       </div>
       <div class="col right">
-        <h1>Order List</h1>
+        <h1>{{ invoice.title }}</h1>
         <div class="small">
-          Order Number: <span class="mono">{{ invoice.invoice_no }}</span><br>
-          <small>ordered at {% if invoice.location %}{{ invoice.location }}, {% endif %}{{ invoice.date_str }}</small>
+          {{ invoice.title }}: <span class="mono">{{ invoice.invoice_no }}</span><br>
+          <small>{{ invoice.table_ordered_at }} {% if invoice.location %}{{ invoice.location }}, {% endif %}{{ invoice.date_str }}</small>
         </div>
       </div>
     </div>
@@ -27,7 +27,7 @@
 
   <div class="row">
     <div class="col box">
-      <strong>Order for</strong><br>
+      <strong>{{ invoice.title }} for</strong><br>
       {{ customer.name }}<br>
       {% if customer.email %}<span class="small muted">{{ customer.email }}</span>{% endif %}
     </div>
@@ -37,9 +37,9 @@
     <table>
       <thead>
         <tr>
-          <th style="width: 8%">Pos.</th>
-          <th>Description</th>
-          <th style="width: 12%">Amount</th>
+          <th style="width: 8%">{{ invoice.table_pos }}</th>
+          <th>{{ invoice.table_desc }}</th>
+          <th style="width: 12%">{{ invoice.table_qty }}</th>
         </tr>
       </thead>
       <tbody>
@@ -52,7 +52,7 @@
         {% endfor %}
         {% if shipping and shipping > 0 %}
         <tr>
-          <td></td><td>Shipping</td><td></td><td></td><td></td>
+          <td></td><td>{{ invoice.table_shipping }}</td><td></td><td></td><td></td>
           <td class="right">{{ "%.2f"|format(shipping) }} {{ currency }}</td>
         </tr>
         {% endif %}

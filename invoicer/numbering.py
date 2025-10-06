@@ -1,7 +1,7 @@
 from datetime import datetime
 
 class InvoiceNumbering:
-    def __init__(self, title : str = "", prefix: str = "RE-", date_format: str = "%d.%m.%Y", start: int = 1):
+    def __init__(self, title : str = "", prefix: str = "RE-", date_format: str = "%m%Y", start: int = 1):
         self.titl = title
         self.prefix = prefix
         self.date_format = date_format

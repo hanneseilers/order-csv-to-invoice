@@ -30,7 +30,7 @@ def main():
     numbering = InvoiceNumbering(
         title = cfg["invoice"].get("title", ""),
         prefix=cfg["invoice"]["numbering"].get("prefix", "RE"),
-        date_format=cfg["invoice"]["numbering"].get("date_format", "%d.%m.%Y"),
+        date_format=cfg["invoice"]["numbering"].get("date_format", "%m%Y"),
         start=int(cfg["invoice"]["numbering"].get("per_run_sequence_start", 1)),
     )
 
@@ -43,7 +43,6 @@ def main():
             port=email_cfg["smtp_port"],
             username=email_cfg.get("username", ""),
             password=email_cfg.get("password", ""),
-            use_tls=bool(email_cfg.get("use_tls", True)),
             sender_email=email_cfg["sender_email"],
         )
 
@@ -68,6 +67,7 @@ def main():
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    mails = []
     for email, data in orders.items():
         if (args.only and email != args.only) \
                 or not isinstance(email, str) or not isinstance(data, dict):
@@ -172,7 +172,17 @@ def main():
                 "date_str": date_obj.strftime(order_date_format),
                 "location": cfg["invoice"].get("sender_location_for_date_line",""),
                 "payment_terms": cfg["invoice"].get("payment_terms",""),
-                "footer_note": cfg["invoice"].get("footer_note","")
+                "footer_note": cfg["invoice"].get("footer_note",""),
+                "table_pos": cfg["invoice"].get("table_pos"),
+                "table_desc": cfg["invoice"].get("table_desc"),
+                "table_qty": cfg["invoice"].get("table_qty"),
+                "table_tax": cfg["invoice"].get("table_tax"),
+                "table_single_price": cfg["invoice"].get("table_single_price"),
+                "table_subtotal": cfg["invoice"].get("table_subtotal"),
+                "table_total": cfg["invoice"].get("table_total"),
+                "table_shipping": cfg["invoice"].get("table_shipping"),
+                "table_notes": cfg["invoice"].get("table_notes"),
+                "table_payment_terms": cfg["invoice"].get("table_payment_terms"),
             },
             "customer": customer.__dict__,
             "items": items,
@@ -206,5 +216,9 @@ def main():
                 payment_terms=cfg["invoice"].get("payment_terms",""),
                 company_name=cfg["company"]["name"],
             )
-            mailer.send(customer.email, subject, body, str(out_pdf))
-            print(f"  → sent to {customer.email}")
+
+            mails.append(
+                mailer.create_mail(customer.email, subject, body, str(out_pdf))
+            )
+
+    mailer.send(mails)

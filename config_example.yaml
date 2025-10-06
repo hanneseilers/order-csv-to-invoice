@@ -31,16 +31,26 @@ invoice:
     prefix: "RE-"
     date_format: "%d.%m.%Y"
     per_run_sequence_start: 1
+  table_pos: "Pos."
+  table_desc: "Description"
+  table_qty: "Quatity"
+  table_tax: "Tex"
+  table_single_price: "Single-Price"
+  table_subtotal: "Subtotal"
+  table_total: "Total"
+  table_shipping: "Shipping"
+  table_notes: "Notes"
+  table_payment_terms: "Payment Information"
+  table_ordered_at: "ordered at"
 
 email:
   enabled: false
   smtp_host: "smtp.example.com"
   smtp_port: 587
-  use_tls: true
   username: "smtp-user"
   password: "smtp-password"
   sender_email: "rechnung@beispiel.de"
-  subject_template: "Ihre Rechnung {invoice_no}"
+  subject_template: "Your Invoice {invoice_no}"
   body_template: |
     Hello {customer_name},
 
