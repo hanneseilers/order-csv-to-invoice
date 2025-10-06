@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Rechnung {{ invoice.invoice_no }}{% endblock %}
+{% block title %}Invoice {{ invoice.invoice_no }}{% endblock %}
 {% block body %}
   <div class="header">
     <div class="row">
@@ -16,10 +16,10 @@
         </div>
       </div>
       <div class="col right">
-        <h1>Rechnung</h1>
+        <h1>{{ invoice.title }}</h1>
         <div class="small">
-          Rechnungsnummer: <span class="mono">{{ invoice.invoice_no }}</span><br>
-          Referenz: <span class="mono">{{ invoice.order_id }}</span><br>
+          {{ invoice.title }} No.: <span class="mono">{{ invoice.invoice_no }}</span><br>
+          Date: <span class="mono">{{ invoice.order_id }}</span><br>
           {{ invoice.location }}, {{ invoice.date_str }}
         </div>
       </div>
@@ -28,7 +28,7 @@
 
   <div class="row">
     <div class="col box">
-      <strong>Rechnung an</strong><br>
+      <strong>{{ invoice.title }} for</strong><br>
       {{ customer.name }}<br>
       {% if customer.street %}{{ customer.street }}<br>{% endif %}
       {% if customer.postal_code or customer.city %}{{ customer.postal_code }} {{ customer.city }}<br>{% endif %}
@@ -36,9 +36,9 @@
       {% if customer.email %}<span class="small muted">{{ customer.email }}</span>{% endif %}
     </div>
     <div class="col box">
-      <strong>Zahlungsinformationen</strong><br>
-      Zahlungsziel: {{ invoice.payment_terms }}<br>
-      Bank: {{ bank.bank_name }}<br>
+      <strong>Payment Information</strong><br>
+      Terms: {{ invoice.payment_terms }}<br>
+      Bank-Account: {{ bank.bank_name }}<br>
       <span class="mono small">IBAN {{ bank.iban }} · BIC {{ bank.bic }}</span>
       {% if paypal.link %}<br>PayPal: <span class="mono small">{{ paypal.link }}</span>{% endif %}
     </div>
@@ -49,11 +49,11 @@
       <thead>
         <tr>
           <th style="width: 8%">Pos.</th>
-          <th>Beschreibung</th>
-          <th style="width: 12%">Menge</th>
-          <th style="width: 18%">Einzelpreis</th>
-          <th style="width: 10%">MwSt.</th>
-          <th style="width: 18%">Zwischensumme</th>
+          <th>Description</th>
+          <th style="width: 12%">Quantity</th>
+          <th style="width: 18%">Item-Price</th>
+          <th style="width: 10%">Tax</th>
+          <th style="width: 18%">Subtotal</th>
         </tr>
       </thead>
       <tbody>
@@ -69,7 +69,7 @@
         {% endfor %}
         {% if shipping and shipping > 0 %}
         <tr>
-          <td></td><td>Versand</td><td></td><td></td><td></td>
+          <td></td><td>Shipping</td><td></td><td></td><td></td>
           <td class="right">{{ "%.2f"|format(shipping) }} {{ currency }}</td>
         </tr>
         {% endif %}
@@ -79,21 +79,21 @@
 
   <div class="row mt-3">
     <div class="col">
-      {% if notes %}<div class="box"><strong>Hinweis:</strong> {{ notes }}</div>{% endif %}
+      {% if notes %}<div class="box"><strong>Notes:</strong> {{ notes }}</div>{% endif %}
       {% if invoice.footer_note %}<div class="small mt-3">{{ invoice.footer_note }}</div>{% endif %}
     </div>
     <div class="col">
       <table class="totals" style="width:100%">
         <tr>
-          <td class="right" style="width:60%"><strong>Zwischensumme (netto):</strong></td>
+          <td class="right" style="width:60%"><strong>Subtotal (netto):</strong></td>
           <td class="right mono">{{ totals.net_fmt }} {{ currency }}</td>
         </tr>
         <tr>
-          <td class="right">MwSt.:</td>
+          <td class="right">Tax.:</td>
           <td class="right mono">{{ totals.vat_fmt }} {{ currency }}</td>
         </tr>
         <tr>
-          <td class="right"><strong>Gesamtbetrag:</strong></td>
+          <td class="right"><strong>Total:</strong></td>
           <td class="right mono"><strong>{{ totals.gross_fmt }} {{ currency }}</strong></td>
         </tr>
       </table>
@@ -101,12 +101,21 @@
   </div>
 
   <div class="row mt-4">
-    <div class="col"></div>
-    <div class="col qr">
-      {% if sepa_qr %}<img src="{{ sepa_qr }}" alt="SEPA QR" style="height:100px; margin-left: 12px">{% endif %}
-      {% if paypal.qr %}<img src="{{ paypal.qr }}" alt="PayPal QR" style="height:100px; margin-left: 12px">{% endif %}
+      <div class="col qr">
+        {% if sepa_qr %}
+          <img src="{{ sepa_qr }}" alt="SEPA QR" style="height:100px;"><br />
+          Girocode
+        {% endif %}
+      </div>
+      <div class="col qr">
+        {% if paypal.qr %}
+          <img src="{{ paypal.qr }}" alt="PayPal QR" style="height:100px;"><br />
+          PayPal
+        {% endif %}
+      </div>
+      <div class="col"></div>
     </div>
-  </div>
+
 
   <div class="small muted mt-4">
     {{ company.name }} · {{ company.street }}, {{ company.postal_code }} {{ company.city }} · {{ company.email }}

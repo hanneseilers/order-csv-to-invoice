@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Rechnung {{ invoice.invoice_no }}{% endblock %}
+{% block title %}Order {{ invoice.invoice_no }}{% endblock %}
 {% block body %}
   <div class="header">
     <div class="row">
@@ -19,7 +19,7 @@
         <h1>Order List</h1>
         <div class="small">
           Order Number: <span class="mono">{{ invoice.invoice_no }}</span><br>
-          <small>ordered at {{ invoice.location }}, {{ invoice.date_str }}</small>
+          <small>ordered at {% if invoice.location %}{{ invoice.location }}, {% endif %}{{ invoice.date_str }}</small>
         </div>
       </div>
     </div>

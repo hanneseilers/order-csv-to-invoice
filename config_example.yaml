@@ -8,7 +8,7 @@ company:
   email: "billing@example.de"
   phone: "+49 431 123456"
   vat_id: "DE123456789"
-  logo_path: ""
+  logo_path: "templates/logo.jpg"
 
 bank:
   account_holder: "Jon Doe"
@@ -20,7 +20,7 @@ paypal:
   link_template: "https://paypal.me/jondoe/{amount}"
 
 invoice:
-  title: "Invoice Title"
+  title: "Invoice"
   currency: "EUR"
   net_prices: true
   default_vat_rate: 0.19

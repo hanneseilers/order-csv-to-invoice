@@ -75,7 +75,8 @@ def main():
 
         customer = Customer(
             name=data.get(name_tag,""),
-            order_time=data.get(time_tag,"")
+            order_time=data.get(time_tag,""),
+            email=str(email)
         )
 
         date_str = data.get(time_tag) or datetime.now().strftime(order_date_format)
@@ -166,11 +167,12 @@ def main():
             "bank": cfg["bank"],
             "paypal": {"link": pp_link, "qr": pp_qr},
             "invoice": {
+                "title": cfg["invoice"].get("title",""),
                 "invoice_no": invoice_no,
                 "date_str": date_obj.strftime(order_date_format),
                 "location": cfg["invoice"].get("sender_location_for_date_line",""),
                 "payment_terms": cfg["invoice"].get("payment_terms",""),
-                "footer_note": cfg["invoice"].get("footer_note",""),
+                "footer_note": cfg["invoice"].get("footer_note","")
             },
             "customer": customer.__dict__,
             "items": items,
