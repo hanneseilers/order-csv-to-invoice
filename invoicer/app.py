@@ -103,6 +103,12 @@ def main():
         shipping = 0.0
         notes = ""
 
+
+
+        if args.costs:
+            # TODO: CSVLoader(csv_path=args.costs, reference_tag=mail_tag, exclude_columns=order_exclude_columns).parse_orders()
+            pass
+
         # process items_data to items list
         for name, qty in items_data.items():
             qty = ensure_int(qty)
@@ -111,10 +117,6 @@ def main():
                 "name": name,
                 "quantity": qty
             })
-
-        if args.costs:
-            # TODO: CSVLoader(csv_path=args.costs, reference_tag=mail_tag, exclude_columns=order_exclude_columns).parse_orders()
-            pass
 
         if not args.list:
 
