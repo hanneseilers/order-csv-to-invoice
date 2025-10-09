@@ -16,9 +16,10 @@ from .models import Customer
 
 def main():
     ap = argparse.ArgumentParser(description="Invoicer (HTML → PDF) modular")
-    ap.add_argument("--csv", required=True, help="CSV input path")
+    ap.add_argument("--csv", required=True, help="CSV input file")
     ap.add_argument("--out", required=True, help="Output folder for PDFs")
     ap.add_argument("--config", default="config_example.yaml", help="Path to YAML config")
+    ap.add_argument("--costs", help="CSV costs input file")
     ap.add_argument("--only", help="Process only this E-Mail address")
     ap.add_argument("--list", action="store_true", help="Create an order list only")
     ap.add_argument("--send", action="store_true", help="Send emails (config email.enabled must be true)")
@@ -110,6 +111,10 @@ def main():
                 "name": name,
                 "quantity": qty
             })
+
+        if args.costs:
+            # TODO: CSVLoader(csv_path=args.costs, reference_tag=mail_tag, exclude_columns=order_exclude_columns).parse_orders()
+            pass
 
         if not args.list:
 
