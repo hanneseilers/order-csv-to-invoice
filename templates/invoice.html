@@ -62,9 +62,9 @@
           <td class="mono">{{ loop.index }}</td>
           <td>{{ item.name }}</td>
           <td class="right">{{ item.quantity }}</td>
-          <td class="right">{{ item.unit_price_fmt }} {{ currency }}</td>
-          <td class="right">{{ item.tax_rate_pct }}%</td>
-          <td class="right">{{ item.line_net_fmt }} {{ currency }}</td>
+          <td class="right">{% if item.price %}{{ item.price }} {{ currency }}{% endif %}</td>
+          <td class="right">{% if item.vat %}{{ item.vat }}%{% endif %}</td>
+          <td class="right">{% if item.subtotal %}{{ item.subtotal }} {{ currency }}{% endif %}</td>
         </tr>
         {% endfor %}
         {% if shipping and shipping > 0 %}
@@ -86,15 +86,15 @@
       <table class="totals" style="width:100%">
         <tr>
           <td class="right" style="width:60%"><strong>Subtotal (netto):</strong></td>
-          <td class="right mono">{{ totals.net_fmt }} {{ currency }}</td>
+          <td class="right mono">{{ totals.net }} {{ currency }}</td>
         </tr>
         <tr>
           <td class="right">Tax.:</td>
-          <td class="right mono">{{ totals.vat_fmt }} {{ currency }}</td>
+          <td class="right mono">{{ totals.vat }} {{ currency }}</td>
         </tr>
         <tr>
           <td class="right"><strong>Total:</strong></td>
-          <td class="right mono"><strong>{{ totals.gross_fmt }} {{ currency }}</strong></td>
+          <td class="right mono"><strong>{{ totals.grand}} {{ currency }}</strong></td>
         </tr>
       </table>
     </div>
