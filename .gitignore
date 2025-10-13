@@ -5,6 +5,6 @@
 !orders_example.csv
 !costs_example.csv
 
-out_invoice/
+out_invoices/
 out/
 *.pdf
