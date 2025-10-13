@@ -22,7 +22,7 @@ paypal:
 invoice:
   title: "Invoice"
   currency: "EUR"
-  net_prices: true
+  net_prices: false
   default_vat_rate: 0.19
   payment_terms: "Payable without discount within 10 DAYS"
   footer_note: "Thanks for your order"
@@ -65,10 +65,18 @@ models:
     name_tag: "Name"
     mail_tag: "E-Mail-Adresse"
     time_tag: "Zeitstempel"
+
   order:
     exclude_columns: ["E-Mail-Adresse", "Kommentar", "Bestellbestätigung"]
 
-    # data to exclude after columns were removed from exlude config above
+    # data to exclude after columns were removed from exclude config above
     exclude_data_columns: ["Zeitstempel", "Name"]
 
     date_format: "%d.%m.%Y %H:%M:%S"
+
+  costs:
+    name_pack_tag: "name pack"
+    replacement_tag: "replacement"
+    price_tag: "price"
+    qty_per_pack_tag: "quatitiy per pack"
+    tax_tag: "tax rate"
