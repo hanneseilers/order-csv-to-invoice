@@ -107,7 +107,7 @@ def main():
         items = []
         net_sum = 0.0
         vat_sum = 0.0
-        shipping = 0.0
+        shipping = 0.0 # TODO: Get shipping from config
         notes = ""
 
         costs = {}
