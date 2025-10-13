@@ -51,7 +51,8 @@ def main():
 
     net_prices = bool(cfg["invoice"].get("net_prices", True))
     vat_default = ensure_float(cfg["invoice"].get("default_vat_rate", 0.0))
-    currency = cfg["invoice"].get("currency","EUR")
+    currency = cfg["invoice"].get("currency", "EUR")
+    shipping = cfg["invoice"].get("shipping", 0.0)
 
     models_cfg = cfg.get("models", {})
     customer_cfg = models_cfg.get("customer", {})
@@ -107,7 +108,6 @@ def main():
         items = []
         net_sum = 0.0
         vat_sum = 0.0
-        shipping = 0.0 # TODO: Get shipping from config
         notes = ""
 
         costs = {}
