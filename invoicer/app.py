@@ -171,6 +171,8 @@ def main():
                 if net_prices and tax > 0.0:
                     vat_sum += price * tax
 
+                net_sum += price
+
         grand = net_sum + shipping + vat_sum
 
         if cfg["bank"].get("iban") and cfg["bank"].get("bic"):
