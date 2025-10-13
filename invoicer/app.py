@@ -130,6 +130,7 @@ def main():
             qty = ensure_int(qty)
             name = str(name)
             price = None
+            subtotal = None
             replacement = None
             qty_per_pack = None
             tax_rate = None
@@ -143,7 +144,7 @@ def main():
                     price = costs_item[costs_item_price_tag]
                     if isinstance(price, str):
                         price = money_to_float(price)
-                    price = price * qty * qty_per_pack
+                    subtotal = price * qty * qty_per_pack
 
                     if costs_item_replacement_tag in costs_item:
                         replacement = str(costs_item[costs_item_replacement_tag])
@@ -157,23 +158,26 @@ def main():
                 "quantity": qty,
                 "quantity per pack": qty_per_pack,
                 "price": price,
-                "vat": tax_rate if net_prices else None
+                "subtotal": subtotal,
+                "vat": ensure_int(tax_rate * 100.0) if net_prices else None
             })
 
         if not args.list:
 
             for n in range(len(items)):
                 item = items[n]
-                price = ensure_float(item.get("price"))
-                tax = ensure_float(item.get("vat"), vat_default)
+                subtotal = ensure_float(item.get("subtotal"))
+                net_sum += subtotal
 
                 #calculate price incl. vat for all items
-                if net_prices and tax > 0.0:
-                    vat_sum += price * tax
+                tax = item.get("vat")
+                if net_prices and tax > 0:
+                    tax = ensure_float(tax / 100.0)
+                    vat_sum += subtotal * tax
 
-                net_sum += price
-
-        grand = net_sum + shipping + vat_sum
+        net_sum = round(net_sum, 2)
+        vat_sum = round(vat_sum, 2)
+        grand = round(net_sum + shipping + vat_sum, 2)
 
         if cfg["bank"].get("iban") and cfg["bank"].get("bic"):
             payload = QRService.epc_sepa_qr_payload(
@@ -216,9 +220,9 @@ def main():
             "items": items,
             "shipping": shipping,
             "totals": {
-                "net": net_sum, "net_fmt": money(net_sum),
-                "vat": vat_sum, "vat_fmt": money(vat_sum),
-                "gross": grand, "gross_fmt": money(grand),
+                "net": net_sum,
+                "vat": vat_sum,
+                "grand": grand
             },
             "currency": currency,
             "notes": notes,
