@@ -4,6 +4,15 @@ from pathlib import Path
 def money(value: float) -> str:
     return f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
+def money_to_float(value: str) -> float:
+    return ensure_float(value
+                        .replace(",", ".")
+                        .replace("EUR", "").
+                        replace("€", "")
+                        .replace("USD", "").
+                        replace("$", "")
+                        .strip())
+
 def ensure_float(value, default: float = 0.0) -> float:
     try:
         if value is None or value == "":
