@@ -67,13 +67,13 @@
               {% endif %}
           </td>
           <td class="right">{{ item.quantity }}</td>
-          <td class="right">{% if item.price %}{{ ('%.2f' % item.price) | replace('.', ',') }} {{ currency }}{% endif %}</td>
+          <td class="right">{% if item.price %}{{ ('%.2f' % item.price) }} {{ currency }}{% endif %}</td>
           {% if totals.vat %}
             <td class="right">
                 {% if item.vat %}{{ item.vat }}%{% endif %}
             </td>
           {% endif %}
-          <td class="right">{% if item.subtotal %}{{ ('%.2f' % item.subtotal) | replace('.', ',') }} {{ currency }}{% endif %}</td>
+          <td class="right">{% if item.subtotal %}{{ ('%.2f' % item.subtotal) }} {{ currency }}{% endif %}</td>
         </tr>
         {% endfor %}
         {% if shipping and shipping > 0 %}
@@ -96,18 +96,18 @@
         {% if totals.net != totals.grand %}
             <tr>
               <td class="right" style="width:60%"><strong>{{ table_subtotal }} (netto):</strong></td>
-              <td class="right mono">{{ ('%.2f' % totals.net) | replace('.', ',') }} {{ currency }}</td>
+              <td class="right mono">{{ ('%.2f' % totals.net) }} {{ currency }}</td>
             </tr>
         {% endif %}
         {% if totals.vat and totals.vat > 0 %}
             <tr>
               <td class="right">{{ table_tax }}:</td>
-              <td class="right mono">{{ ('%.2f' % totals.vat) | replace('.', ',') }} {{ currency }}</td>
+              <td class="right mono">{{ ('%.2f' % totals.vat) }} {{ currency }}</td>
             </tr>
         {% endif %}
         <tr>
           <td class="right"><strong>{{ table_total }}:</strong></td>
-          <td class="right mono"><strong>{{ ('%.2f' % totals.grand) | replace('.', ',') }} {{ currency }}</strong></td>
+          <td class="right mono"><strong>{{ ('%.2f' % totals.grand) }} {{ currency }}</strong></td>
         </tr>
       </table>
     </div>
