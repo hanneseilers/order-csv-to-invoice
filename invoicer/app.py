@@ -185,7 +185,7 @@ def main():
                 bic=cfg["bank"]["bic"],
                 name=cfg["bank"].get("account_holder", cfg["company"]["name"]),
                 amount=grand,
-                remittance=f"Rechnung {invoice_no}",
+                remittance=f"{invoice_no}",
                 currency=currency
             )
             sepa_qr = QRService.make_qr_data_uri(payload)
@@ -215,6 +215,7 @@ def main():
                 "table_shipping": cfg["invoice"].get("table_shipping"),
                 "table_notes": cfg["invoice"].get("table_notes"),
                 "table_payment_terms": cfg["invoice"].get("table_payment_terms"),
+                "table_bank_account": cfg["invoice"].get("table_bank_account")
             },
             "customer": customer.__dict__,
             "items": items,
@@ -236,7 +237,7 @@ def main():
         else:
             renderer.render_to_pdf(out_pdf, context)
 
-        print(f"Created {out_pdf.name} for order{"-list" if args.list else ""} {email} amount {grand:.2f} {currency}")
+        print(f"Created {out_pdf.name} for order{"-list" if args.list else ""} from {email} amount {grand:.2f} {currency}")
 
         if args.send and email_cfg.get("enabled", False) and mailer:
             subject = email_cfg["subject_template"].format(invoice_no=invoice_no)
@@ -253,4 +254,5 @@ def main():
                 mailer.create_mail(customer.email, subject, body, str(out_pdf))
             )
 
-    mailer.send(mails)
+    if mailer:
+        mailer.send(mails)
