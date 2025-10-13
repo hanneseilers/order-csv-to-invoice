@@ -11,7 +11,7 @@ from .numbering import InvoiceNumbering
 from .qr import QRService
 from .renderer import HTMLRenderer
 from .emailer import EmailSender
-from .utils import ensure_float, ensure_int, money, image_file_to_data_uri
+from .utils import ensure_float, ensure_int, money, money_to_float, image_file_to_data_uri
 from .models import Customer
 
 def main():
@@ -64,6 +64,13 @@ def main():
     order_exclude_data_columns = order_cfg.get("exclude_data_columns", [])
     order_date_format = order_cfg.get("date_format", "%d.%m.%Y %H:%M:%S")
 
+    costs_cfg = models_cfg.get("costs", {})
+    costs_item_name_tag = costs_cfg.get("name_pack_tag", "name")
+    costs_item_replacement_tag = costs_cfg.get("replacement_tag", "replacement")
+    costs_item_price_tag = costs_cfg.get("price_tag", "price")
+    costs_item_qty_per_pack_tag = costs_cfg.get("qty_per_pack_tag", "quatitiy per pack")
+    costs_item_tax_tag = costs_cfg.get("tax_tag", "tax rate")
+
     orders = CSVLoader(csv_path=args.csv, reference_tag=mail_tag, exclude_columns=order_exclude_columns).parse_orders()
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -103,56 +110,68 @@ def main():
         shipping = 0.0
         notes = ""
 
-
-
+        costs = {}
         if args.costs:
-            # TODO: CSVLoader(csv_path=args.costs, reference_tag=mail_tag, exclude_columns=order_exclude_columns).parse_orders()
-            pass
+            costs = CSVLoader(csv_path=args.costs, reference_tag=costs_item_name_tag).parse_orders()
+
+            for item_name, item_value in costs.items():
+
+                if item_name and "UNKNOWN" not in item_name.upper() \
+                    and isinstance(item_value, dict):
+
+                    if costs_item_replacement_tag not in item_value:
+                        item_value[costs_item_replacement_tag] = None
+
+                    if costs_item_tax_tag not in item_value:
+                        item_value[costs_item_tax_tag] = vat_default
 
         # process items_data to items list
         for name, qty in items_data.items():
             qty = ensure_int(qty)
             name = str(name)
+            price = None
+            replacement = None
+            qty_per_pack = None
+            tax_rate = None
+
+            if name in costs:
+                costs_item = costs[name]
+                if isinstance(costs_item, dict):
+
+                    qty_per_pack = ensure_int(costs_item[costs_item_qty_per_pack_tag])
+
+                    price = costs_item[costs_item_price_tag]
+                    if isinstance(price, str):
+                        price = money_to_float(price)
+                    price = price * qty * qty_per_pack
+
+                    if costs_item_replacement_tag in costs_item:
+                        replacement = str(costs_item[costs_item_replacement_tag])
+
+                    if costs_item_tax_tag in costs_item:
+                        tax_rate = ensure_float(costs_item[costs_item_tax_tag])
+
             items.append({
                 "name": name,
-                "quantity": qty
+                "replacement": replacement,
+                "quantity": qty,
+                "quantity per pack": qty_per_pack,
+                "price": price,
+                "vat": tax_rate if net_prices else None
             })
 
         if not args.list:
 
-            # for r in data:
-            #     qty = ensure_float(r.get("quantity"), 0.0)
-            #     unit = ensure_float(r.get("unit_price"), 0.0)
-            #     tax = ensure_float(r.get("tax_rate"), vat_default)
-            #     name = r.get("item_name","" )
-            #
-            #     if net_prices:
-            #         line_net = qty * unit
-            #         line_vat = line_net * tax
-            #     else:
-            #         gross = qty * unit
-            #         line_net = gross / (1 + tax) if (1 + tax) else gross
-            #         line_vat = gross - line_net
-            #
-            #     items.append({
-            #         "name": name,
-            #         "quantity": f"{qty:g}",
-            #         "unit_price": unit,
-            #         "unit_price_fmt": money(unit),
-            #         "tax_rate": tax,
-            #         "tax_rate_pct": int(round(tax*100)),
-            #         "line_net": line_net,
-            #         "line_net_fmt": money(line_net),
-            #     })
-            #     net_sum += line_net
-            #     vat_sum += line_vat
-            #
-            #     shipping = shipping or ensure_float(r.get("shipping"), 0.0)
-            #     if r.get("notes"): notes = r.get("notes")
-            #
-            net_sum += shipping
+            for n in range(len(items)):
+                item = items[n]
+                price = ensure_float(item.get("price"))
+                tax = ensure_float(item.get("vat"), vat_default)
 
-        grand = net_sum + vat_sum
+                #calculate price incl. vat for all items
+                if net_prices and tax > 0.0:
+                    vat_sum += price * tax
+
+        grand = net_sum + shipping + vat_sum
 
         if cfg["bank"].get("iban") and cfg["bank"].get("bic"):
             payload = QRService.epc_sepa_qr_payload(
