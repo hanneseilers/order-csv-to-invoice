@@ -12,15 +12,15 @@
         <div class="small muted">
           {{ company.street }} · {{ company.postal_code }} {{ company.city }} · {{ company.country }}<br>
           {{ company.email }}{% if company.phone %} · {{ company.phone }}{% endif %}
-          {% if company.vat_id %}<br>USt-IdNr.: {{ company.vat_id }}{% endif %}
+          {% if company.vat_id %}<br>
+          {{ invoice.table_ust_id_name }}: {{ company.vat_id }}{% endif %}
         </div>
       </div>
       <div class="col right">
         <h1>{{ invoice.title }}</h1>
         <div class="small">
-          {{ invoice.title }} No.: <span class="mono">{{ invoice.invoice_no }}</span><br>
-          Date: <span class="mono">{{ invoice.order_id }}</span><br>
-          {{ invoice.location }}, {{ invoice.date_str }}
+          {{ invoice.title }}: <span class="mono">{{ invoice.invoice_no }}</span><br>
+          <small>{{ invoice.table_ordered_at }} {% if invoice.location %}{{ invoice.location }}, {% endif %}{{ invoice.date_str }}</small>
         </div>
       </div>
     </div>
@@ -30,17 +30,14 @@
     <div class="col box">
       <strong>{{ invoice.title }} for</strong><br>
       {{ customer.name }}<br>
-      {% if customer.street %}{{ customer.street }}<br>{% endif %}
-      {% if customer.postal_code or customer.city %}{{ customer.postal_code }} {{ customer.city }}<br>{% endif %}
-      {% if customer.country %}{{ customer.country }}<br>{% endif %}
       {% if customer.email %}<span class="small muted">{{ customer.email }}</span>{% endif %}
     </div>
     <div class="col box">
-      <strong>Payment Information</strong><br>
-      Terms: {{ invoice.payment_terms }}<br>
-      Bank-Account: {{ bank.bank_name }}<br>
-      <span class="mono small">IBAN {{ bank.iban }} · BIC {{ bank.bic }}</span>
-      {% if paypal.link %}<br>PayPal: <span class="mono small">{{ paypal.link }}</span>{% endif %}
+      <strong>{{ invoice.table_payment_terms }}</strong><br>
+        {{ invoice.payment_terms }}<br>
+        {{ invoice.table_bank_account }}: {{ bank.bank_name }}<br>
+        <span class="mono small">IBAN {{ bank.iban }} · BIC {{ bank.bic }}</span>
+        {% if paypal.link %}<br>PayPal: <span class="mono small">{{ paypal.link }}</span>{% endif %}
     </div>
   </div>
 
@@ -48,28 +45,39 @@
     <table>
       <thead>
         <tr>
-          <th style="width: 8%">Pos.</th>
-          <th>Description</th>
-          <th style="width: 12%">Quantity</th>
-          <th style="width: 18%">Item-Price</th>
-          <th style="width: 10%">Tax</th>
-          <th style="width: 18%">Subtotal</th>
+          <th style="width: 8%">{{ invoice.table_pos }}</th>
+          <th>{{ invoice.table_desc }}</th>
+          <th style="width: 12%">{{ table_qty }}</th>
+          <th style="width: 18%">{{ table_single_price }}</th>
+          {% if totals.vat %}<th style="width: 10%">{{ table_tax }}</th>{% endif %}
+          <th style="width: 18%">{{ table_sum }}</th>
         </tr>
       </thead>
       <tbody>
         {% for item in items %}
         <tr>
           <td class="mono">{{ loop.index }}</td>
-          <td>{{ item.name }}</td>
+          {% set rep = item.replacement if item.replacement is defined else none %}
+          <td>
+              {% if rep is not none and rep|trim|lower not in ('', 'none', 'null', 'nan') %}
+                {{ item.replacement }} (replacement for {{ item.name }})
+              {% else %}
+                {{ item.name }}
+              {% endif %}
+          </td>
           <td class="right">{{ item.quantity }}</td>
           <td class="right">{% if item.price %}{{ item.price }} {{ currency }}{% endif %}</td>
-          <td class="right">{% if item.vat %}{{ item.vat }}%{% endif %}</td>
+          {% if totals.vat %}
+            <td class="right">
+                {% if item.vat %}{{ item.vat }}%{% endif %}
+            </td>
+          {% endif %}
           <td class="right">{% if item.subtotal %}{{ item.subtotal }} {{ currency }}{% endif %}</td>
         </tr>
         {% endfor %}
         {% if shipping and shipping > 0 %}
         <tr>
-          <td></td><td>Shipping</td><td></td><td></td><td></td>
+          <td></td><td>{{ table_shipping }}</td><td></td><td></td><td></td>
           <td class="right">{{ "%.2f"|format(shipping) }} {{ currency }}</td>
         </tr>
         {% endif %}
@@ -84,16 +92,20 @@
     </div>
     <div class="col">
       <table class="totals" style="width:100%">
+        {% if totals.net != totals.grand %}
+            <tr>
+              <td class="right" style="width:60%"><strong>{{ table_subtotal }} (netto):</strong></td>
+              <td class="right mono">{{ totals.net }} {{ currency }}</td>
+            </tr>
+        {% endif %}
+        {% if totals.vat and totals.vat > 0 %}
+            <tr>
+              <td class="right">{{ table_tax }}:</td>
+              <td class="right mono">{{ totals.vat }} {{ currency }}</td>
+            </tr>
+        {% endif %}
         <tr>
-          <td class="right" style="width:60%"><strong>Subtotal (netto):</strong></td>
-          <td class="right mono">{{ totals.net }} {{ currency }}</td>
-        </tr>
-        <tr>
-          <td class="right">Tax.:</td>
-          <td class="right mono">{{ totals.vat }} {{ currency }}</td>
-        </tr>
-        <tr>
-          <td class="right"><strong>Total:</strong></td>
+          <td class="right"><strong>{{ table_total }}:</strong></td>
           <td class="right mono"><strong>{{ totals.grand}} {{ currency }}</strong></td>
         </tr>
       </table>
