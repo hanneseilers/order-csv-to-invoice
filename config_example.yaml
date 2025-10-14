@@ -46,6 +46,8 @@ invoice:
   table_payment_terms: "Payment Information"
   table_bank_account: "Bank-Account"
   table_ordered_at: "ordered at"
+  table_for: "for"
+  table_replacement: "Replacement"
 
 email:
   enabled: false

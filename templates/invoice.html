@@ -20,8 +20,7 @@
       <div class="col right">
         <h1>{{ invoice.title }}</h1>
         <div class="small">
-          {{ invoice.title }}: <span class="mono">{{ invoice.invoice_no }}</span><br>
-          <small>{{ invoice.table_ordered_at }} {% if invoice.location %}{{ invoice.location }}, {% endif %}{{ invoice.date_str }}</small>
+          {{ invoice.table_ordered_at }} {{ invoice.date_str }}
         </div>
       </div>
     </div>
@@ -29,16 +28,29 @@
 
   <div class="row">
     <div class="col box">
-      <strong>{{ invoice.title }} for</strong><br>
-      {{ customer.name }}<br>
-      {% if customer.email %}<span class="small muted">{{ customer.email }}</span>{% endif %}
+      <strong>{{ invoice.title }}</strong><br>
+      <span class="mono">{{ invoice.invoice_no }}</span><br>
+      <p>
+          <small>{{ invoice.table_for }}:</small><br>
+          {{ customer.name }}<br>
+          {% if customer.email %}<span class="small muted">{{ customer.email }}</span>{% endif %}
+      </p>
     </div>
     <div class="col box">
+
       <strong>{{ invoice.table_payment_terms }}</strong><br>
-        {{ invoice.payment_terms }}<br>
-        {{ invoice.table_bank_account }}: {{ bank.bank_name }}<br>
-        <span class="mono small">IBAN {{ bank.iban }} · BIC {{ bank.bic }}</span>
-        {% if paypal.link %}<br>PayPal: <span class="mono small">{{ paypal.link }}</span>{% endif %}
+        <small>{{ invoice.payment_terms }}<br></small>
+        <p class="mono small">
+            {{ invoice.table_bank_account }}: {{ bank.bank_name }}<br>
+                IBAN {{ bank.iban }}<br>
+                BIC {{ bank.bic }}
+        </p>
+        {% if paypal.link %}
+            <p Class="mono small">
+                PayPal: {{ paypal.link }}
+            </p>
+        {% endif %}
+
     </div>
   </div>
 
@@ -48,10 +60,10 @@
         <tr>
           <th style="width: 8%">{{ invoice.table_pos }}</th>
           <th>{{ invoice.table_desc }}</th>
-          <th style="width: 12%">{{ table_qty }}</th>
-          <th style="width: 18%">{{ table_single_price }}</th>
-          {% if totals.vat %}<th style="width: 10%">{{ table_tax }}</th>{% endif %}
-          <th style="width: 18%">{{ table_sum }}</th>
+          <th style="width: 12%">{{ invoice.table_qty }}</th>
+          <th style="width: 18%">{{ invoice.table_single_price }}</th>
+          {% if totals.vat %}<th style="width: 10%">{{ invoice.table_tax }}</th>{% endif %}
+          <th style="width: 18%">{{ invoice.table_sum }}</th>
         </tr>
       </thead>
       <tbody>
@@ -61,7 +73,8 @@
           {% set rep = item.replacement if item.replacement is defined else none %}
           <td>
               {% if rep is not none and rep|trim|lower not in ('', 'none', 'null', 'nan') %}
-                {{ item.replacement }} (replacement for {{ item.name }})
+                {{ item.replacement }}<br>
+                <small>({{ invoice.table_replacement }} {{ invoice.table_for }} {{ item.name }})</small>
               {% else %}
                 {{ item.name }}
               {% endif %}
@@ -95,18 +108,18 @@
       <table class="totals" style="width:100%">
         {% if totals.net != totals.grand %}
             <tr>
-              <td class="right" style="width:60%"><strong>{{ table_subtotal }} (netto):</strong></td>
+              <td class="right" style="width:60%"><strong>{{ invoice.table_subtotal }} (netto):</strong></td>
               <td class="right mono">{{ ('%.2f' % totals.net) | replace('.', ',') }} {{ currency }}</td>
             </tr>
         {% endif %}
         {% if totals.vat and totals.vat > 0 %}
             <tr>
-              <td class="right">{{ table_tax }}:</td>
+              <td class="right">{{ invoice.table_tax }}:</td>
               <td class="right mono">{{ ('%.2f' % totals.vat) | replace('.', ',') }} {{ currency }}</td>
             </tr>
         {% endif %}
         <tr>
-          <td class="right"><strong>{{ table_total }}:</strong></td>
+          <td class="right"><strong>{{ invoice.table_total }}:</strong></td>
           <td class="right mono"><strong>{{ ('%.2f' % totals.grand) | replace('.', ',') }} {{ currency }}</strong></td>
         </tr>
       </table>

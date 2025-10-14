@@ -217,7 +217,10 @@ def main():
                 "table_shipping": cfg["invoice"].get("table_shipping"),
                 "table_notes": cfg["invoice"].get("table_notes"),
                 "table_payment_terms": cfg["invoice"].get("table_payment_terms"),
-                "table_bank_account": cfg["invoice"].get("table_bank_account")
+                "table_bank_account": cfg["invoice"].get("table_bank_account"),
+                "table_ordered_at": cfg["invoice"].get("table_ordered_at"),
+                "table_for": cfg["invoice"].get("table_for"),
+                "table_replacement": cfg["invoice"].get("table_replacement")
             },
             "customer": customer.__dict__,
             "items": items,
