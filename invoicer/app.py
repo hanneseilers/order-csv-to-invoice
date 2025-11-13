@@ -25,9 +25,10 @@ def main():
     ap.add_argument("--send", action="store_true", help="Send emails (config email.enabled must be true)")
     args = ap.parse_args()
 
-    # loading config
+    # Loading config
     cfg = yaml.safe_load(Path(args.config).read_text(encoding="utf-8"))
 
+    # Initiate numbering system
     numbering = InvoiceNumbering(
         title = cfg["invoice"].get("title", ""),
         prefix=cfg["invoice"]["numbering"].get("prefix", "RE"),
@@ -35,7 +36,10 @@ def main():
         start=int(cfg["invoice"]["numbering"].get("per_run_sequence_start", 1)),
     )
 
+    # Initiate html page renderer
     renderer = HTMLRenderer(templates_dir=str(Path("templates")))
+
+    # Initiate sending emails, if requested
     email_cfg = cfg.get("email", {})
     mailer = None
     if args.send and email_cfg.get("enabled", False):
@@ -47,8 +51,10 @@ def main():
             sender_email=email_cfg["sender_email"],
         )
 
+    # Get company logo
     logo_data = image_file_to_data_uri(cfg["company"].get("logo_path","")) if cfg["company"].get("logo_path") else ""
 
+    # Get custom configuration values
     net_prices = bool(cfg["invoice"].get("net_prices", True))
     vat_default = ensure_float(cfg["invoice"].get("default_vat_rate", 0.0))
     currency = cfg["invoice"].get("currency", "EUR")
@@ -72,28 +78,34 @@ def main():
     costs_item_qty_per_pack_tag = costs_cfg.get("qty_per_pack_tag", "quatitiy per pack")
     costs_item_tax_tag = costs_cfg.get("tax_tag", "tax rate")
 
+    # Load orders list and generate output directory
     orders = CSVLoader(csv_path=args.csv, reference_tag=mail_tag, exclude_columns=order_exclude_columns).parse_orders()
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    # Process each order one-by-one
     mails = []
+    order_list = []
     for email, data in orders.items():
         if (args.only and email != args.only) \
                 or not isinstance(email, str) or not isinstance(data, dict):
             continue
 
+        # Create customer out of order data
         customer = Customer(
             name=data.get(name_tag,""),
             order_time=data.get(time_tag,""),
             email=str(email)
         )
 
+        # Generate date string
         date_str = data.get(time_tag) or datetime.now().strftime(order_date_format)
         try:
             date_obj = dateparser.parse(date_str).date()
         except Exception:
             date_obj = datetime.now().date()
 
+        # Gather ordered items from oder data
         items_data = {
             k: v.strip() if isinstance(v, str) else v
             for k, v in data.items()
@@ -110,6 +122,7 @@ def main():
         vat_sum = 0.0
         notes = ""
 
+        # Calculate costs, if requested
         costs = {}
         if args.costs:
             costs = CSVLoader(csv_path=args.costs, reference_tag=costs_item_name_tag).parse_orders()
@@ -135,6 +148,7 @@ def main():
             qty_per_pack = None
             tax_rate = None
 
+            # Calculate customers item costs
             if name in costs:
                 costs_item = costs[name]
                 if isinstance(costs_item, dict):
@@ -152,6 +166,7 @@ def main():
                     if costs_item_tax_tag in costs_item:
                         tax_rate = ensure_float(costs_item[costs_item_tax_tag])
 
+            # Add calculated item to customers ordered items
             items.append({
                 "name": name,
                 "replacement": replacement,
@@ -162,6 +177,7 @@ def main():
                 "vat": ensure_int(tax_rate * 100.0) if net_prices else None
             })
 
+        # Calculate prices
         if not args.list:
 
             for n in range(len(items)):
@@ -175,10 +191,12 @@ def main():
                     tax = ensure_float(tax / 100.0)
                     vat_sum += subtotal * tax
 
+        # Normalize total costs
         net_sum = round(net_sum, 2)
         vat_sum = round(vat_sum, 2)
         grand = round(net_sum + shipping + vat_sum, 2)
 
+        # Generate payment information
         if cfg["bank"].get("iban") and cfg["bank"].get("bic"):
             payload = QRService.epc_sepa_qr_payload(
                 iban=cfg["bank"]["iban"],
@@ -194,6 +212,7 @@ def main():
             pp_link = cfg["paypal"]["link_template"].format(amount=f"{grand:.2f}")
             pp_qr = QRService.make_qr_data_uri(pp_link)
 
+        # Create context for pdf generation
         context = {
             "company": {**cfg["company"], "logo_data": logo_data},
             "bank": cfg["bank"],
@@ -235,8 +254,11 @@ def main():
             "sepa_qr": sepa_qr,
         }
 
-        out_pdf = Path(args.out) / f"{invoice_no}_{customer.name}.pdf"
+        # Add customer to total list
+        order_list.append( {'name': customer.name, 'items': items} )
 
+        # Generate PDF
+        out_pdf = Path(args.out) / f"{invoice_no}_{customer.name}.pdf"
         if args.list:
             renderer.render_to_pdf(out_pdf, context, "order-list.html")
         else:
@@ -244,6 +266,7 @@ def main():
 
         print(f"Created {out_pdf.name} for order{"-list" if args.list else ""} from {email} amount {grand:.2f} {currency}")
 
+        # Generate Mail
         if args.send and email_cfg.get("enabled", False) and mailer:
             subject = email_cfg["subject_template"].format(invoice_no=invoice_no)
             body = email_cfg["body_template"].format(
@@ -259,5 +282,8 @@ def main():
                 mailer.create_mail(customer.email, subject, body, str(out_pdf))
             )
 
+    # Render complete orders list
+
+    # Send mails
     if mailer:
         mailer.send(mails)
