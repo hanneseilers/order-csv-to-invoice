@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}All-Orders{% endblock %}
+{% block body %}
+  <div class="header">
+    <div class="row">
+      <div class="col">
+        {% if company.logo_data %}
+          <img src="{{ company.logo_data }}" alt="Logo" style="height: 50px">
+        {% else %}
+          <div class="brand">{{ company.name }}</div>
+        {% endif %}
+      </div>
+      <div class="col right">
+        <h1>Orders-Checklist</h1>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 20%">Customer</th>
+          <th>Ordered Articles</th>
+          <th style="width: 35%; min-height: 30%;">Signature</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+        <tr>
+          <td class="mono"><small>{{ order.name }}</small></td>
+          <td>
+              <small>
+                  <ul>
+                  {% for item in order.ordered_items %}
+
+                      {% set rep = item.replacement if item.replacement is defined else none %}
+                      <li>
+                          {{ item.quantity }} x
+                          {% if rep is not none and rep|trim|lower not in ('', 'none', 'null', 'nan') %}
+                            {{ item.replacement }}
+                          {% else %}
+                            {{ item.name }}
+                          {% endif %}
+                      </li>
+
+                  {% endfor %}
+                  </ul>
+              </small>
+          </td>
+          <td class="right"></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="small muted mt-4">
+    {{ company.name }} · {{ company.street }}, {{ company.postal_code }} {{ company.city }} · {{ company.email }}
+  </div>
+{% endblock %}
