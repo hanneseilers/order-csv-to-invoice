@@ -255,7 +255,7 @@ def main():
         }
 
         # Add customer to total list
-        order_list.append( {'name': customer.name, 'items': items} )
+        order_list.append( {'name': customer.name, 'ordered_items': items} )
 
         # Generate PDF
         out_pdf = Path(args.out) / f"{invoice_no}_{customer.name}.pdf"
@@ -283,6 +283,12 @@ def main():
             )
 
     # Render complete orders list
+    context = {
+        "company": {**cfg["company"], "logo_data": logo_data},
+        "orders": order_list
+    }
+    out_pdf = Path(args.out) / f"orders-checklist.pdf"
+    renderer.render_to_pdf(out_pdf, context, "orders-checklist.html")
 
     # Send mails
     if mailer:
